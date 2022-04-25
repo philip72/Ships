@@ -12,56 +12,80 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import javax.xml.transform.ErrorListener;
+
 
 public class MainActivity extends AppCompatActivity {
 
 
-    RecyclerView recyclerView;
-    ProgressBar progressBar;
-    LinearLayoutManager layoutManager;
-    ShipAdapter shipAdapter;
-    List<ShipModal> shipModalList= new ArrayList<>();
+    private RecyclerView recyclerView;
+    private RequestQueue requestQueue;
+    private List<ShipModal> shipList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        recyclerView = findViewById(R.id.recyclerview);
-        progressBar = findViewById(R.id.progressBar);
-        layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
-        shipAdapter =new ShipAdapter(shipModalList);
-        recyclerView.setAdapter(shipAdapter);
 
+        recyclerView= findViewById(R.id.recyclerview);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        requestQueue = VolleySingleton.getmInstance(this).getRequestQueue();
+        shipList= new ArrayList<>();
+        fetchShip();
 
     }
-    private void fetchShips(){
-        progressBar.setVisibility(View.VISIBLE);
-        RequestManager.requestManager().getShips().enqueue(new Callback<List<ShipModal>>() {
-            @Override
-            public void onResponse(Call<List<ShipModal>> call, Response<List<ShipModal>> response) {
-                if (response.isSuccessful()&& response.body() !=null){
-                    shipModalList.addAll(response.body());
-                    shipAdapter.notifyDataSetChanged();
-                    progressBar.setVisibility(View.GONE);
 
+    private void fetchShip() {
+        String url= "https://api.spacexdata.com/v3/ships";
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                for (int i=0;i<response.length();i++){
+                    try {
+                        JSONObject jsonObject =response.getJSONObject(1);
+                        String ship_name= jsonObject.getString("ship_name");
+                        String ship_id= jsonObject.getString("ship_id");
+                        String ship_type=jsonObject.getString("ship_type");
+                        String home_port=jsonObject.getString("home_port");
+                        String image =jsonObject.getString("image");
+
+                        ShipModal ship = new ShipModal(ship_id,ship_name,ship_type,home_port,image);
+                        shipList.add(ship);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    ShipAdapter adapter= new ShipAdapter(MainActivity.this, shipList);
+                    recyclerView.setAdapter(adapter);
                 }
-            }
 
+            }
+        }, new Response.ErrorListener() {
             @Override
-            public void onFailure(Call<List<ShipModal>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(MainActivity.this, "Error"+t.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(MainActivity.this,error.getMessage(), Toast.LENGTH_SHORT).show();
 
             }
         });
+
+        requestQueue.add(jsonArrayRequest);
     }
+
     public boolean  onCreateOptionMenu(Menu filter){
         getMenuInflater().inflate(R.menu.filter, filter);
         MenuItem item = filter.findItem(R.id.action_search);
