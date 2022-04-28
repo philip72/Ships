@@ -38,8 +38,8 @@ public class ShipAdapter extends RecyclerView.Adapter<ShipAdapter.ShipHolder> {
         ShipModal ship = shipModalList.get(position);
         holder.ship_name.setText(ship.getShip_name());
         holder.ship_id.setText(ship.getShip_id());
-        holder.ship_type.setText(ship.getShip_type());
-        holder.home_port.setText(ship.getHome_port());
+        //holder.ship_type.setText(ship.getShip_type());
+        //holder.home_port.setText(ship.getHome_port());
         Glide.with(context).load(ship.getImage()).into(holder.imageView);
         holder.bottom_drawer.setOnClickListener(new View.OnClickListener() {
             @Override
