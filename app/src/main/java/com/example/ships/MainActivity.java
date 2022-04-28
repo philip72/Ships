@@ -58,12 +58,13 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(JSONArray response) {
                 for (int i=0;i<response.length();i++){
                     try {
-                        JSONObject jsonObject =response.getJSONObject(1);
+                        JSONObject jsonObject =response.getJSONObject(i);
                         String ship_name= jsonObject.getString("ship_name");
                         String ship_id= jsonObject.getString("ship_id");
                         String ship_type=jsonObject.getString("ship_type");
                         String home_port=jsonObject.getString("home_port");
-                        String image =jsonObject.getString("image");
+                        String image =(!jsonObject.getString("image").equals("null"))?jsonObject.getString("image"):"https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png";
+
 
                         ShipModal ship = new ShipModal(ship_id,ship_name,ship_type,home_port,image);
                         shipList.add(ship);
