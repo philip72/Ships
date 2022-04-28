@@ -24,7 +24,7 @@ public class ShipModal {
     }
 
     public String getImage() {
-        return image;
+        return shp_type;
     }
 
     public String getHome_port() {
@@ -32,6 +32,6 @@ public class ShipModal {
     }
 
     public String getShip_type() {
-        return ship_type;
+        return image;
     }
 }
